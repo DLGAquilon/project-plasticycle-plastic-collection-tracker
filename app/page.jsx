@@ -186,7 +186,7 @@ export default function Home() {
                             {/* SDG 12 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#BF8D2C] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/12-goal-resources.png" alt="SDG 12" className="w-full h-full object-cover" />
+                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/12-goal-resources.png" alt="SDG 12" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Responsible Consumption</h3>
@@ -199,7 +199,7 @@ export default function Home() {
                             {/* SDG 11 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#F99D26] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/11-goal-resources.png" alt="SDG 11" className="w-full h-full object-cover" />
+                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/11-goal-resources.png" alt="SDG 11" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Sustainable Communities</h3>
@@ -212,7 +212,7 @@ export default function Home() {
                             {/* SDG 13 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#3F7E44] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/13-goal-resources.png" alt="SDG 13" className="w-full h-full object-cover" />
+                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/13-goal-resources.png" alt="SDG 13" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Climate Action</h3>
