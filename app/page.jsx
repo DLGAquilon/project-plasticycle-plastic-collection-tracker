@@ -4,6 +4,8 @@ import {
     Zap, BookOpen, Maximize, Twitter, Facebook, Linkedin, Target, Users, BrainCircuit, Globe, ShieldCheck, TrendingUp
 } from 'lucide-react';
 
+import Image from 'next/image';
+
 const ctaShadowStyle = {
     boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.2)',
 };
@@ -120,7 +122,7 @@ export default function Home() {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
                                 <div className="relative bg-white p-2 rounded-full inline-block">
                                     <img 
-                                        src="https://scontent.fdvo2-2.fna.fbcdn.net/v/t39.30808-6/491926792_3585689501575682_4599594511746899747_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeFZvxBkZLeATu3fwIJD8PfzQBtIEJ-l1VdAG0gQn6XVV6ZOp6KuPxJ77ICABwTWlyW7hBfxfqt6Z_fOQJslDzJu&_nc_ohc=oeGKcIFGXiAQ7kNvwGimkbz&_nc_oc=AdnPF6NPk2Fz3pylPU-HoaEUYSkIsp296q9T5M11OYsopshyW7RYOOulpyq0lqVuyws&_nc_zt=23&_nc_ht=scontent.fdvo2-2.fna&_nc_gid=kkpCqMqFJD8VTX6TwYu04Q&oh=00_AfmtH6hamM8Wxt2xpNKAl5fS9Y_708Ry3h2nTSzaGRkW7g&oe=6949F36C" 
+                                        src="/images/formal-image.jpg" 
                                         alt="Vin Benjamin Belandres" 
                                         className="w-48 h-48 rounded-full bg-slate-100 object-cover"
                                     />
@@ -131,6 +133,7 @@ export default function Home() {
                                 <p className="text-emerald-600 font-bold font-inter uppercase tracking-tighter text-sm">Full Stack Developer</p>
                                 <p className="text-emerald-600 font-bold font-inter uppercase tracking-tighter text-sm">UI/UX Designer</p>
                                 <p className="text-emerald-600 font-bold font-inter uppercase tracking-tighter text-sm">Project Manager</p>
+                                <a href="https://dlgaquilon.github.io/it103-fa1-portfolio/" className="block mt-8 text-emerald-500 font-bold font-inter uppercase tracking-tighter text-sm no-underline hover:underline text-emerald-600">View Portfolio</a>
                             </div>
                         </div>
                     </div>
@@ -186,7 +189,7 @@ export default function Home() {
                             {/* SDG 12 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#BF8D2C] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/12-goal-resources.png" alt="SDG 12" className="h-40 w-auto object-contain" />
+                                    <img src="/images/sdg-12.png" alt="SDG 12" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Responsible Consumption</h3>
@@ -199,7 +202,7 @@ export default function Home() {
                             {/* SDG 11 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#F99D26] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/11-goal-resources.png" alt="SDG 11" className="h-40 w-auto object-contain" />
+                                    <img src="/images/sdg-11.png" alt="SDG 11" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Sustainable Communities</h3>
@@ -212,7 +215,7 @@ export default function Home() {
                             {/* SDG 13 */}
                             <div className="group overflow-hidden rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
                                 <div className="h-48 bg-[#3F7E44] flex items-center justify-center p-8 transition-transform group-hover:scale-105">
-                                    <img src="https://globalgoalscms.co.uk/wp-content/uploads/2021/10/13-goal-resources.png" alt="SDG 13" className="h-40 w-auto object-contain" />
+                                    <img src="/images/sdg-13.png" alt="SDG 13" className="h-40 w-auto object-contain" />
                                 </div>
                                 <div className="p-8">
                                     <h3 className="text-xl font-bold font-inter mb-4 text-indigo-950">Climate Action</h3>
@@ -256,7 +259,7 @@ export default function Home() {
                             {/* Admin */}
                             <div className="bg-white p-8 rounded-3xl shadow-sm hover:shadow-md transition-all">
                                 <Activity className="w-12 h-12 text-indigo-500 mb-6" />
-                                <h4 className="text-2xl font-bold font-inter text-indigo-950 mb-4">School Admin</h4>
+                                <h4 className="text-2xl font-bold font-inter text-indigo-950 mb-4">School Administrators</h4>
                                 <p className="text-gray-600 text-sm leading-relaxed mb-4 font-sans italic">Strategy User</p>
                                 <p className="text-gray-600 text-base leading-relaxed font-sans">
                                     Relies on centralized collection records and forecasting insights to evaluate and support institutional sustainability.
@@ -269,8 +272,9 @@ export default function Home() {
                 {/* 8. Final Call-to-Action */}
                 <section id="start" className="py-24 bg-emerald-500 text-white">
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
-                        <h2 className="text-4xl md:text-5xl font-black mb-8 font-inter uppercase tracking-tight">Ready to Win for MMCM?</h2>
-                        <p className="text-xl text-emerald-50 mb-10 leading-relaxed font-sans">
+                        <h2 className="text-5xl md:text-6xl font-black mb-4 font-inter tracking-tight">Start Contributing.</h2>
+                        <h2 className="text-5xl md:text-6xl font-black mb-4 font-inter tracking-tight">Start Competing.</h2>
+                        <p className="text-xl text-emerald-50 mt-8 mb-10 leading-relaxed font-sans">
                             Join your fellow students and start turning plastic waste into departmental points today.
                         </p>
                         <div className="flex flex-col sm:flex-row justify-center gap-6">
