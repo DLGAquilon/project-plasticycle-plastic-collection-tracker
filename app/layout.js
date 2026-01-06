@@ -1,8 +1,5 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Raleway, Roboto, Inter, Frank_Ruhl_Libre } from "next/font/google";
 import "./globals.css";
-
-// Import Inter
-import { Inter } from "next/font/google";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,10 +11,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Define Inter with a variable
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const frlSerif = Frank_Ruhl_Libre({
+  variable: "--font-frank-ruhl-libre",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata = {
@@ -26,14 +40,15 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  // Apply all font variables globally to the body.
-  // NOTE: This setup assumes you configure your tailwind.config.js to map:
-  // - 'font-sans' to 'var(--font-geist-sans)' (for paragraphs)
-  // - 'font-inter' to 'var(--font-inter)' (for headers)
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
+        className={`${geistSans.variable} 
+        ${geistMono.variable} 
+        ${inter.variable} 
+        ${frlSerif.variable} 
+        ${roboto.variable} 
+        ${raleway.variable} antialiased`}
       >
         {children}
       </body>
