@@ -20,6 +20,12 @@ import {
   Globe,
   ShieldCheck,
   TrendingUp,
+  Flag,
+  Rocket,
+  UserCircle,
+  Layout,
+  ClipboardCheck,
+  CheckCircle2,
 } from "lucide-react";
 
 const ctaShadowStyle = {
@@ -412,6 +418,158 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="summary" className="py-24 bg-white">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="text-center max-w-3xl mx-auto mb-20">
+              <h2 className="text-4xl md:text-5xl font-black text-indigo-950 mb-6 font-inter tracking-tight uppercase">
+                Project Summary
+              </h2>
+              <p className="text-gray-500 font-sans italic">
+                The roadmap to a sustainable campus community.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Left Column: Groundwork & Strategic Goals */}
+              <div className="lg:col-span-1 space-y-8">
+                <div className="bg-slate-900 text-white p-8 rounded-[2rem] shadow-lg">
+                  <div className="flex items-center mb-6 text-emerald-400">
+                    <Flag className="w-6 h-6 mr-3" />
+                    <h3 className="text-lg font-bold font-inter uppercase">
+                      Groundwork
+                    </h3>
+                  </div>
+                  <p className="text-indigo-100 text-sm leading-relaxed mb-6 font-sans">
+                    Solving the crisis of "Participation Fatigue." We move from
+                    manual, sporadic events to a continuous, data-driven
+                    ecosystem where every deposit is recorded and valued.
+                  </p>
+                  <div className="flex items-center mb-4 text-emerald-400 pt-4 border-t border-white/10">
+                    <Rocket className="w-6 h-6 mr-3" />
+                    <h3 className="text-lg font-bold font-inter uppercase">
+                      Strategic Goals
+                    </h3>
+                  </div>
+                  <p className="text-indigo-100 text-sm leading-relaxed font-sans">
+                    To establish MMCM as a model for "Micro-Community
+                    Sustainability," creating a repeatable framework for other
+                    institutions to follow.
+                  </p>
+                </div>
+
+                <div className="bg-emerald-50 p-8 rounded-[2rem] border border-emerald-100">
+                  <div className="flex items-center mb-6 text-emerald-700">
+                    <UserCircle className="w-6 h-6 mr-3" />
+                    <h3 className="text-lg font-bold font-inter uppercase">
+                      User Persona
+                    </h3>
+                  </div>
+                  <p className="text-emerald-900/70 text-sm font-bold mb-2">
+                    The Proactive Student
+                  </p>
+                  <p className="text-emerald-800 text-sm leading-relaxed font-sans">
+                    Goal: To contribute to their department’s ranking while
+                    effortlessly logging waste disposal via mobile, seeing their
+                    impact in real-time.
+                  </p>
+                </div>
+              </div>
+
+              {/* Middle Column: Features */}
+              <div className="lg:col-span-1 bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm">
+                <div className="flex items-center mb-8 text-indigo-950">
+                  <Layout className="w-6 h-6 mr-3 text-emerald-500" />
+                  <h3 className="text-xl font-bold font-inter uppercase tracking-tight">
+                    Key Features
+                  </h3>
+                </div>
+                <ul className="space-y-6">
+                  {[
+                    {
+                      title: "Real-time Leaderboards",
+                      text: "Instant visualization of departmental rankings to drive healthy campus competition.",
+                    },
+                    {
+                      title: "AI Trend Prediction",
+                      text: "Predicts high-volume periods to optimize waste collection logistics.",
+                    },
+                    {
+                      title: "Mobile-First Logging",
+                      text: "Frictionless deposit entry designed for students on the move.",
+                    },
+                    {
+                      title: "Admin Dashboards",
+                      text: "Comprehensive data exporting for sustainability reporting and compliance.",
+                    },
+                    {
+                      title: "Gamification Elements",
+                      text: "Departments are given rewards at the end of the school year to incentivize participation.",
+                    },
+                    {
+                      title: "Leaderboard Integrity",
+                      text: "Robust validation mechanisms such as QR-based logging, Drop-box Protocols, and Admin Oversight to ensure accurate deposit logging.",
+                    }
+                  ].map((f, i) => (
+                    <li key={i} className="flex gap-4">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold mt-1">
+                        {i + 1}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-indigo-950 font-inter uppercase">
+                          {f.title}
+                        </p>
+                        <p className="text-xs text-slate-500 font-sans mt-1">
+                          {f.text}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Right Column: Test Cases */}
+              <div className="lg:col-span-1 bg-emerald-600 text-white p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+                <div className="absolute -bottom-10 -right-10 opacity-10">
+                  <ClipboardCheck className="w-48 h-48" />
+                </div>
+                <div className="flex items-center mb-8">
+                  <ClipboardCheck className="w-6 h-6 mr-3" />
+                  <h3 className="text-xl font-bold font-inter uppercase">
+                    Release Criteria
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {[
+                    "Validation: Leaderboard updates in <1s after deposit log.",
+                    "Integrity: Deposit counts only accept valid numerical inputs.",
+                    "AI Accuracy: Forecast variance within +/- 15% of actuals.",
+                    "Security: Dept. data read-only for students, write-only for admins.",
+                    "UX: Deposit flow completed in under 3 simple steps.",
+                  ].map((test, i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs font-sans leading-relaxed tracking-tight">
+                        {test}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-8 pt-8 border-t border-white/20">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-200">
+                    Current Phase
+                  </p>
+                  <p className="text-lg font-black font-inter mt-1">
+                    Beta Testing / V1.0
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* 8. Final Call-to-Action */}
         <section id="start" className="py-24 bg-emerald-500 text-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
@@ -470,12 +628,18 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a href="#ai" className="hover:text-emerald-400 transition font-raleway tracking-wider uppercase">
+                  <a
+                    href="#ai"
+                    className="hover:text-emerald-400 transition font-raleway tracking-wider uppercase"
+                  >
                     AI Technology
                   </a>
                 </li>
                 <li>
-                  <a href="#sdg" className="hover:text-emerald-400 transition font-raleway tracking-wider uppercase">
+                  <a
+                    href="#sdg"
+                    className="hover:text-emerald-400 transition font-raleway tracking-wider uppercase"
+                  >
                     Sustainability
                   </a>
                 </li>
