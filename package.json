@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/plasticycle.test.js tests/competitions.test.js"
+    "test": "node --test tests/plasticycle.test.js tests/competitions.test.js tests/onboarding.test.js"
   },
   "dependencies": {
     "lucide-react": "^0.562.0",

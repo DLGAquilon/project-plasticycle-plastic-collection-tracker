@@ -45,6 +45,10 @@ export default function ConsoleApp() {
 
   async function loadList() {
     const data = await api("/api/competitions");
+    if (data.user?.needsSetup) {
+      window.location.href = "/setup";
+      return data;
+    }
     setList(data);
     return data;
   }
@@ -82,6 +86,7 @@ export default function ConsoleApp() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <a href="/settings" className="rounded-full border border-line px-4 py-2 text-sm font-semibold">Settings</a>
             <button type="button" onClick={signOut} className="rounded-full border border-line px-4 py-2 text-sm font-semibold">
               Sign out
             </button>
@@ -159,7 +164,75 @@ function CompetitionList({ list, onOpen, onAdd }) {
           ))}
         </ul>
       )}
+      {list.user.isOwner ? <OwnerAccess /> : null}
       {list.canInvite ? <InviteForm list={list} /> : null}
+    </section>
+  );
+}
+
+function OwnerAccess() {
+  const [requests, setRequests] = useState([]);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  async function load() {
+    const data = await api("/api/admin/requests");
+    setRequests(data.requests || []);
+  }
+
+  useEffect(() => {
+    load().catch((reason) => setError(reason.message));
+  }, []);
+
+  async function generate() {
+    setPending(true);
+    setError("");
+    try {
+      const data = await api("/api/admin/invites", { method: "POST" });
+      setCode(data.code);
+    } catch (reason) {
+      setError(reason.message);
+    }
+    setPending(false);
+  }
+
+  async function review(id, decision) {
+    setError("");
+    try {
+      await api("/api/admin/requests", { method: "POST", body: JSON.stringify({ id, decision }) });
+      await load();
+    } catch (reason) {
+      setError(reason.message);
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-3xl border border-line bg-card p-6">
+      <h2 className="text-xl font-semibold">Coordinator access</h2>
+      <p className="mt-2 text-sm text-muted">
+        Create a code that expires in 72 hours, or approve a participant who asked for admin rights.
+      </p>
+      <button type="button" onClick={generate} disabled={pending} className="mt-4 rounded-full bg-forest px-4 py-2 text-sm font-semibold text-on-brand disabled:opacity-60">
+        Create invite code
+      </button>
+      {code ? <p className="mt-3 font-semibold tracking-wide">Invite code {code}</p> : null}
+      <ul className="mt-4 space-y-3">
+        {requests.map((request) => (
+          <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+            <span>
+              <span className="font-semibold">{request.name}</span>
+              <span className="mt-1 block text-sm text-muted">{request.email}</span>
+            </span>
+            <span className="flex gap-2">
+              <button type="button" onClick={() => review(request.id, "approve")} className="rounded-full bg-forest px-3 py-2 text-sm font-semibold text-on-brand">Approve</button>
+              <button type="button" onClick={() => review(request.id, "decline")} className="rounded-full border border-line px-3 py-2 text-sm font-semibold">Decline</button>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {requests.length === 0 ? <p className="mt-4 text-sm text-muted">No pending requests.</p> : null}
+      {error ? <p className="mt-3 text-sm text-red-800">{error}</p> : null}
     </section>
   );
 }
@@ -208,7 +281,7 @@ function InviteForm({ list }) {
     <form onSubmit={submit} className="mt-8 rounded-3xl border border-line bg-card p-6">
       <h2 className="text-xl font-semibold">Add a staff account</h2>
       <p className="mt-1 text-sm text-muted">
-        Public signup can only create a viewer. Middlemen and administrators are added here, by someone who already holds that authority.
+        Joining an existing organization creates a viewer. Staff accounts are added here by someone who already holds that authority.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="text-sm font-medium">

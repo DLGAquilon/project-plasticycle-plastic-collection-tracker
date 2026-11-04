@@ -27,7 +27,7 @@ export default function LoginPage() {
         setPending(false);
         return;
       }
-      window.location.href = "/console";
+      window.location.href = data.user?.isOwner && data.user?.setupComplete === false ? "/setup" : "/console";
     } catch {
       setError("The platform could not be reached. Try again.");
       setPending(false);

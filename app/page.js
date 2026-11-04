@@ -1,6 +1,5 @@
 import {
   Activity,
-  AlertTriangle,
   Award,
   BrainCircuit,
   CheckCircle2,
@@ -10,7 +9,6 @@ import {
   Layout,
   Linkedin,
   Rocket,
-  ShieldCheck,
   Target,
   TrendingUp,
   Twitter,
@@ -18,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import Logo from "../components/logo.js";
+import ProblemGrid from "../components/problem-grid.js";
 import ThemeToggle from "../components/theme-toggle.js";
 
 const features = [
@@ -33,7 +32,7 @@ const releaseCriteria = [
   "Validation: The ranking updates after a recorded weigh-in.",
   "Integrity: Kilograms accept a scale reading from 0.01 to 5,000, with at most two decimal places.",
   "Forecast: Each purok or department is predicted from its own weeks, not from the contest total.",
-  "Security: A public signup creates a viewer. Middlemen and admins are created by someone who already holds that authority.",
+  "Security: Joining a community creates a viewer. The first person to register a new organization becomes its super admin.",
   "UX: A weigh-in is reviewed, then recorded, in a short sequence.",
 ];
 
@@ -94,25 +93,12 @@ export default function Home() {
               <h2 className="text-4xl font-black uppercase tracking-wide md:text-5xl">Project Proposal</h2>
               <p className="mt-4 text-sm font-bold uppercase tracking-widest text-muted">Turning Waste into a Winning Game</p>
             </div>
-            <div className="grid items-start gap-8 md:grid-cols-2">
-              <article className="h-full rounded-3xl border border-line bg-paper p-8">
-                <div className="mb-6 flex items-center text-clay">
-                  <AlertTriangle className="mr-3 h-8 w-8" />
-                  <h3 className="text-2xl font-bold">The Problem</h3>
-                </div>
-                <p className="text-lg leading-relaxed">
-                Organizations, local governments, and campuses lack a unified, scalable infrastructure to track, incentivize, and report grassroots sustainability and recycling efforts—leading to low community engagement, unverified ESG metrics, and abandoned green initiatives.
-                </p>
-              </article>
-              <article className="h-full rounded-3xl border border-line bg-paper p-8">
-                <div className="mb-6 flex items-center text-forest">
-                  <ShieldCheck className="mr-3 h-8 w-8" />
-                  <h3 className="text-2xl font-bold">The Solution</h3>
-                </div>
-                <p className="text-lg leading-relaxed">
-                  A centralized, web-based platform to log and track plastic deposits. By integrating competition, we foster consistent engagement, encouraging proper disposal habits and long-term environmental accountability within the community.
-                </p>
-              </article>
+            <ProblemGrid />
+            <div className="mt-10 text-center">
+              <a href="/signup?hub=1" className="inline-flex rounded-full bg-forest px-8 py-4 text-lg font-semibold text-on-brand">
+                Deploy Your Community Hub
+              </a>
+              <p className="mt-4 text-sm text-muted">The first person to register a hub becomes its super admin and sets the campaign rules.</p>
             </div>
           </div>
         </section>
@@ -194,7 +180,7 @@ export default function Home() {
         <section id="users" className="bg-paper py-24">
           <div className="mx-auto max-w-6xl px-4">
             <h2 className="mb-4 text-center text-4xl font-black uppercase tracking-wider">Who is this for?</h2>
-            <p className="mx-auto mb-16 max-w-2xl text-center text-muted">Three roles share one contest. A signup form can create only the first.</p>
+            <p className="mx-auto mb-16 max-w-2xl text-center text-muted">Three roles share one contest. Joining an organization creates a viewer. Registering a new organization creates its super admin.</p>
             <div className="grid gap-8 md:grid-cols-3">
               {[
                 [Users, "text-accent", "Enrolled viewers", "Residents, students, employees", "They see only the competition an administrator enrolled them in. Inside it, they read the ranked kilograms and that group’s forecast."],
