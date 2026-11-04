@@ -1,3 +1,4 @@
+import { listPublicOrganizations } from "../../../lib/actions.js";
 import { createCompetition, listCompetitions } from "../../../lib/competitions.js";
 import { getDb } from "../../../lib/db.js";
 import { assertOrigin, json, readBody, rejected, requestIpHash, requireActor } from "../../../lib/http.js";
@@ -17,6 +18,8 @@ export async function GET() {
         organizationName: actor.organizationName,
       },
       canAdd: actor.role === "org_admin" || actor.role === "platform_admin",
+      canInvite: actor.role === "org_admin" || actor.role === "platform_admin",
+      organizations: actor.role === "platform_admin" ? listPublicOrganizations(getDb()) : [],
       competitions,
     });
   } catch (error) {
