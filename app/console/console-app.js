@@ -152,7 +152,7 @@ function CompetitionList({ list, onOpen, onAdd }) {
                 </div>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight">{competition.name}</h2>
                 <p className="mt-1 text-sm text-muted">{prettyDate(competition.startsOn)} to {prettyDate(competition.endsOn)} · {competition.participantCount} {competition.participantsLabel.toLowerCase()}</p>
-                <p className="mt-4 text-lg font-semibold">{kg(competition.totalKilos)} kg</p>
+                <p className="mt-4 text-lg font-bold">{kg(competition.totalKilos)} kg</p>
                 <p className="text-sm text-muted">{competition.leaderName ? `Leading: ${competition.leaderName}` : "No weigh-ins yet"}</p>
               </button>
             </li>
@@ -414,7 +414,7 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
             <li key={row.id} className="rise px-3 py-2" style={{ animationDelay: `${index * 60}ms` }}>
               <div className="mb-1 flex justify-between gap-3 text-sm">
                 <span className="font-semibold">{row.rank}. {row.name}</span>
-                <span>{kg(row.kilos)} kg</span>
+                <span className="font-bold">{kg(row.kilos)} kg</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-line">
                 <div className="h-2 rounded-full bg-accent transition-all duration-700" style={{ width: `${max ? Math.max(row.kilos ? 6 : 0, (row.kilos / max) * 100) : 0}%` }} />

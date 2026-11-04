@@ -21,20 +21,20 @@ import Logo from "../components/logo.js";
 import ThemeToggle from "../components/theme-toggle.js";
 
 const features = [
-  ["Real-time Leaderboards", "Instant visualization of departmental rankings to drive healthy campus competition."],
-  ["AI Trend Prediction", "Predicts high-volume periods to optimize waste collection logistics."],
-  ["Mobile-First Logging", "Frictionless deposit entry designed for students on the move."],
-  ["Admin Dashboards", "Comprehensive data exporting for sustainability reporting and compliance."],
-  ["Gamification Elements", "Departments are given rewards at the end of the school year to incentivize participation."],
-  ["Leaderboard Integrity", "Robust validation mechanisms such as QR-based logging, drop-box protocols, and admin oversight to ensure accurate deposit logging."],
+  ["Typed competitions", "A barangay ranks puroks. A campus or company ranks departments, so the words on the board never mix."],
+  ["Ranked kilograms", "Standings update from each weigh-in, with the collected kilos and the rank kept as the main figures."],
+  ["Forecast per group", "Each purok or department has its own actual line and a separate dashed prediction."],
+  ["Enrollment", "Viewers open only the contest an administrator enrolled them in."],
+  ["Lock the result", "When the contest ends, an admin locks it. Weigh-ins close and the final ranking stays."],
+  ["Role boundaries", "Viewers can read. Middlemen can record a weigh-in. Admins add contests, enroll people, and lock the board."],
 ];
 
 const releaseCriteria = [
-  "Validation: Leaderboard updates in under 1 second after a deposit log.",
-  "Integrity: Deposit counts only accept valid numerical inputs.",
-  "AI Accuracy: Forecast variance within plus or minus 15 percent of actuals.",
-  "Security: Department data is read-only for students and write-only for admins.",
-  "UX: Deposit flow completed in under 3 simple steps.",
+  "Validation: The ranking updates after a recorded weigh-in.",
+  "Integrity: Kilograms accept a scale reading from 0.01 to 5,000, with at most two decimal places.",
+  "Forecast: Each purok or department is predicted from its own weeks, not from the contest total.",
+  "Security: A public signup creates a viewer. Middlemen and admins are created by someone who already holds that authority.",
+  "UX: A weigh-in is reviewed, then recorded, in a short sequence.",
 ];
 
 export default function Home() {
@@ -75,12 +75,12 @@ export default function Home() {
           }}
         >
           <div className="relative z-10 mx-auto max-w-4xl px-4 py-20">
-            <h1 className="text-5xl font-bold leading-tight text-white drop-shadow-2xl md:text-7xl">
+            <h1 className="text-5xl font-bold leading-tight text-[#f8fafc] drop-shadow-2xl md:text-7xl">
               Track Your Plastic, <br />
               <span className="text-[#22c55e]">Compete for the Planet.</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-slate-100 drop-shadow-lg md:text-xl">
-              A web-based plastic waste deposit tracking and inter-departmental competition system for MMCM.
+            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#e2e8f0] drop-shadow-lg md:text-xl">
+              Barangays, campuses, and companies rank the kilograms of single-use plastic their puroks or departments collect. Only people enrolled in a contest can open it.
             </p>
             <a href="#proposal" className="mt-8 inline-block rounded-full bg-forest px-12 py-5 text-xl font-bold text-on-brand">
               Explore the Project
@@ -138,18 +138,18 @@ export default function Home() {
                 <BrainCircuit className="h-10 w-10" />
               </div>
               <h2 className="mb-8 text-4xl font-black uppercase tracking-wider md:text-5xl">AI-Driven Forecasting</h2>
-              <p className="text-xl leading-relaxed text-slate-200">
+              <p className="text-xl leading-relaxed text-[#e2e8f0]">
                 PlastiCycle uses a sophisticated <span className="font-bold text-[#22c55e]">Time-Series Forecasting Module</span> to predict plastic deposit trends.
               </p>
             </div>
-            <div className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-8">
+            <div className="space-y-6 rounded-3xl border border-[#334155] bg-[#1e293b] p-8">
               <div className="flex gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#22c55e] text-[#0f172a]">
                   <TrendingUp className="h-6 w-6" />
                 </div>
                 <div>
                   <h4 className="text-lg font-bold">Short-Term Predictions</h4>
-                  <p className="text-sm text-slate-300">Predicts collection volumes over a 2-3 month horizon using historical departmental data.</p>
+                  <p className="text-sm text-[#94a3b8]">Predicts collection volumes over the coming weeks from one purok or department at a time.</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -158,7 +158,7 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="text-lg font-bold">Proactive Planning</h4>
-                  <p className="text-sm text-slate-300">Enables administrators to allocate waste management resources based on projected departmental performance.</p>
+                  <p className="text-sm text-[#94a3b8]">Helps an administrator plan collection from the pace of each group, while the ranking itself stays in kilograms.</p>
                 </div>
               </div>
             </div>
@@ -193,12 +193,13 @@ export default function Home() {
 
         <section id="users" className="bg-paper py-24">
           <div className="mx-auto max-w-6xl px-4">
-            <h2 className="mb-16 text-center text-4xl font-black uppercase tracking-wider">Who is this for?</h2>
+            <h2 className="mb-4 text-center text-4xl font-black uppercase tracking-wider">Who is this for?</h2>
+            <p className="mx-auto mb-16 max-w-2xl text-center text-muted">Three roles share one contest. A signup form can create only the first.</p>
             <div className="grid gap-8 md:grid-cols-3">
               {[
-                [Users, "text-forest", "MMCM Students", "Primary User", "Provides a simple logging interface, clear departmental rankings, and immediate progress tracking to stay motivated."],
-                [Award, "text-accent", "Dept. Representatives", "Secondary User", "Requires tools to monitor internal engagement and access comparative insights to encourage team participation."],
-                [Activity, "text-ink", "School Administrators", "Strategy User", "Relies on centralized collection records and forecasting insights to evaluate and support institutional sustainability."],
+                [Users, "text-accent", "Enrolled viewers", "Residents, students, employees", "They see only the competition an administrator enrolled them in. Inside it, they read the ranked kilograms and that group’s forecast."],
+                [Award, "text-forest", "Middlemen", "The weigh station", "They choose the purok or department, enter the kilograms from the scale, review the entry, and record it."],
+                [Activity, "text-ink", "Organization admins", "Barangay, campus, or company", "They open a contest of one type, add the participating groups, enroll viewers, and lock the board when the result is final."],
               ].map(([Icon, color, title, role, text]) => (
                 <article key={title} className="rounded-3xl border border-line bg-card p-8">
                   <Icon className={`mb-6 h-12 w-12 ${color}`} />
@@ -215,7 +216,7 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-4">
             <div className="mx-auto mb-20 max-w-3xl text-center">
               <h2 className="mb-6 text-4xl font-black uppercase tracking-tight md:text-5xl">Project Summary</h2>
-              <p className="text-muted">The roadmap to a sustainable campus community.</p>
+              <p className="text-muted">How a barangay, campus, or company runs one plastic competition.</p>
             </div>
             <div className="grid gap-8 lg:grid-cols-3">
               <div className="space-y-8">
@@ -224,15 +225,15 @@ export default function Home() {
                     <Flag className="mr-3 h-6 w-6" />
                     <h3 className="text-lg font-bold uppercase">Groundwork</h3>
                   </div>
-                  <p className="mb-6 text-sm leading-relaxed text-slate-200">
-                    Solving the crisis of participation fatigue. We move from manual, sporadic events to a continuous, data-driven ecosystem where every deposit is recorded and valued.
+                  <p className="mb-6 text-sm leading-relaxed text-[#e2e8f0]">
+                    Collection drives fade when the kilos are written in a notebook. PlastiCycle keeps every weigh-in on one board, for the puroks of a barangay or the departments of a campus or company.
                   </p>
-                  <div className="mb-4 flex items-center border-t border-white/10 pt-4 text-[#22c55e]">
+                  <div className="mb-4 flex items-center border-t border-[#334155] pt-4 text-[#22c55e]">
                     <Rocket className="mr-3 h-6 w-6" />
                     <h3 className="text-lg font-bold uppercase">Strategic Goals</h3>
                   </div>
-                  <p className="text-sm leading-relaxed text-slate-200">
-                    To establish MMCM as a model for micro-community sustainability, creating a repeatable framework for other institutions to follow.
+                  <p className="text-sm leading-relaxed text-[#e2e8f0]">
+                    MMCM remains the model. The same contest can now run for a barangay, a campus, or a company, with the participant names kept to that type.
                   </p>
                 </div>
                 <div className="rounded-[2rem] border border-line bg-paper p-8">
@@ -240,9 +241,9 @@ export default function Home() {
                     <UserCircle className="mr-3 h-6 w-6" />
                     <h3 className="text-lg font-bold uppercase">User Persona</h3>
                   </div>
-                  <p className="mb-2 text-sm font-bold">The Proactive Student</p>
+                  <p className="mb-2 text-sm font-bold">The enrolled participant</p>
                   <p className="text-sm leading-relaxed text-muted">
-                    Goal: To contribute to their department ranking while effortlessly logging waste disposal via mobile, seeing their impact in real time.
+                    Goal: Open only their contest, see which purok or department leads in kilograms, and read the forecast for their own group.
                   </p>
                 </div>
               </div>
@@ -272,13 +273,13 @@ export default function Home() {
                 </div>
                 <div className="space-y-4">
                   {releaseCriteria.map((test) => (
-                    <div key={test} className="flex items-start gap-3 rounded-xl bg-black/10 p-4">
+                    <div key={test} className="flex items-start gap-3 rounded-xl bg-[color-mix(in_srgb,var(--on-brand)_14%,transparent)] p-4">
                       <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
                       <p className="text-xs leading-relaxed">{test}</p>
                     </div>
                   ))}
                 </div>
-                <div className="mt-8 border-t border-black/15 pt-8">
+                <div className="mt-8 border-t border-[color-mix(in_srgb,var(--on-brand)_25%,transparent)] pt-8">
                   <p className="text-[10px] font-bold uppercase tracking-widest">Current Phase</p>
                   <p className="mt-1 text-lg font-black">Beta Testing / V1.0</p>
                 </div>
@@ -292,7 +293,7 @@ export default function Home() {
             <h2 className="text-5xl font-black tracking-tight md:text-6xl">Start Contributing.</h2>
             <h2 className="mt-2 text-5xl font-black tracking-tight md:text-6xl">Start Competing.</h2>
             <p className="mb-10 mt-8 text-xl leading-relaxed md:text-2xl">
-              Join your fellow students and start turning plastic waste into departmental points today.
+              Join a contest for your barangay, campus, or company, and turn collected plastic into a ranked result.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <a href="/login" className="rounded-full bg-card px-10 py-4 text-lg font-semibold text-ink">Launch Platform</a>
@@ -308,7 +309,7 @@ export default function Home() {
             <div className="md:col-span-2">
               <span className="text-3xl font-extrabold tracking-tight text-[#22c55e]">PlastiCycle</span>
               <p className="mt-4 max-w-xs leading-relaxed">
-                A data-driven approach to plastic waste management within the Mapúa Malayan Colleges Mindanao community.
+                A kilogram competition for barangays, campuses, and companies, begun with the Mapúa Malayan Colleges Mindanao community.
               </p>
             </div>
             <div>
@@ -329,7 +330,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-[#334155] pt-8 text-center text-xs uppercase tracking-widest">
-            &copy; {new Date().getFullYear()} PlastiCycle • Vin Benjamin Belandres • MMCM Sustainability Initiative
+            &copy; {new Date().getFullYear()} PlastiCycle • Vin Benjamin Belandres • Sustainability Initiative
           </div>
         </div>
       </footer>
