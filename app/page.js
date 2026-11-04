@@ -101,7 +101,7 @@ export default function Home() {
                   <h3 className="text-2xl font-bold">The Problem</h3>
                 </div>
                 <p className="text-lg leading-relaxed">
-                  Campus initiatives are often sporadic and poorly monitored. The lack of a centralized tracking system results in inconsistent participation, fewer accountability measures, and difficulty in evaluating departmental contributions.
+                Organizations, local governments, and campuses lack a unified, scalable infrastructure to track, incentivize, and report grassroots sustainability and recycling efforts—leading to low community engagement, unverified ESG metrics, and abandoned green initiatives.
                 </p>
               </article>
               <article className="h-full rounded-3xl border border-line bg-paper p-8">
@@ -110,7 +110,7 @@ export default function Home() {
                   <h3 className="text-2xl font-bold">The Solution</h3>
                 </div>
                 <p className="text-lg leading-relaxed">
-                  A centralized, web-based platform to log and track plastic deposits. By integrating competition, we foster consistent engagement, encouraging proper disposal habits and long-term environmental accountability within the MMCM Community.
+                  A centralized, web-based platform to log and track plastic deposits. By integrating competition, we foster consistent engagement, encouraging proper disposal habits and long-term environmental accountability within the community.
                 </p>
               </article>
             </div>
@@ -125,7 +125,7 @@ export default function Home() {
             <p className="mt-2 text-sm font-bold uppercase tracking-tight text-forest">Full Stack Developer</p>
             <p className="text-sm font-bold uppercase tracking-tight text-forest">UI/UX Designer</p>
             <p className="text-sm font-bold uppercase tracking-tight text-forest">Project Manager</p>
-            <a href="https://dlgaquilon.github.io/it103-fa1-portfolio/" className="mt-8 block text-2xl font-bold uppercase tracking-tight text-forest underline">
+            <a href="https://vbbelandres-portfolio.vercel.app/" className="mt-8 block text-2xl font-bold uppercase tracking-tight text-forest underline">
               View Portfolio
             </a>
           </div>
@@ -309,7 +309,7 @@ export default function Home() {
             <div className="md:col-span-2">
               <span className="text-3xl font-extrabold tracking-tight text-[#22c55e]">PlastiCycle</span>
               <p className="mt-4 max-w-xs leading-relaxed">
-                A kilogram competition for barangays, campuses, and companies, begun with the Mapúa Malayan Colleges Mindanao community.
+                A kilogram competition for barangays, campuses, and companies.
               </p>
             </div>
             <div>
