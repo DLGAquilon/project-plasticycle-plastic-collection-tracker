@@ -2,11 +2,13 @@
   "name": "project-plasticycle-plastic-collection-tracker",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test tests/plasticycle.test.js tests/competitions.test.js"
   },
   "dependencies": {
     "lucide-react": "^0.562.0",
