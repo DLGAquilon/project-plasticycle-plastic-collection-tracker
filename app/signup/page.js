@@ -34,8 +34,10 @@ export default function SignupPage() {
   const [pending, setPending] = useState(false);
 
   useEffect(() => {
-    const hub = new URLSearchParams(window.location.search).get("hub");
-    if (hub === "1") setMode("create");
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("hub") === "1") setMode("create");
+    const preset = params.get("email");
+    if (preset) setEmail(preset);
     fetch("/api/public/organizations")
       .then((response) => response.json())
       .then((data) => setOrganizations(data.organizations || []))

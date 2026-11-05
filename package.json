@@ -8,9 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/plasticycle.test.js tests/competitions.test.js tests/onboarding.test.js"
+    "test": "node --test tests/plasticycle.test.js tests/competitions.test.js tests/onboarding.test.js",
+    "supabase:check": "node scripts/check-supabase.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",

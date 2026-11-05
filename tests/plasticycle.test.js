@@ -10,6 +10,8 @@ import {
   getActorByEmail,
   joinSeason,
   loginUser,
+  loginWithVerifiedEmail,
+  lookupAccount,
   rank,
   seasonStandings,
   voidCollection,
@@ -205,6 +207,19 @@ test("failed sign-ins share one message and then lock", () => {
     () => loginUser(db, { email: "antonio.weigh@plasticycle.app", password: "Weigh!Station1", ipHash: "a" }),
     (error) => error.status === 429,
   );
+});
+
+test("email lookup accepts an existing account and Google sign-in uses that same email", () => {
+  const db = database();
+  assert.deepEqual(lookupAccount(db, "antonio.weigh@plasticycle.app"), { exists: true, reason: "ready" });
+  assert.deepEqual(lookupAccount(db, "missing.person@example.com"), { exists: false, reason: "none" });
+  assert.throws(
+    () => loginWithVerifiedEmail(db, { email: "missing.person@example.com", ipHash: "a" }),
+    (error) => error instanceof ActionError && error.status === 401,
+  );
+  const session = loginWithVerifiedEmail(db, { email: "antonio.weigh@plasticycle.app", ipHash: "a" });
+  assert.equal(session.user.email, "antonio.weigh@plasticycle.app");
+  assert.ok(session.token);
 });
 
 test("weekly totals become an eight-week trend, and a short history does not pretend to forecast", () => {

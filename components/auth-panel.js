@@ -10,7 +10,7 @@ export default function AuthPanel({ title, children }) {
         style={{ filter: "blur(18px)" }}
       />
       <div className="absolute inset-0 bg-[#0f172a]/68" />
-      <div className="relative z-10 flex min-h-[28rem] flex-col justify-between p-8 text-[#f8fafc] md:min-h-[40rem]">
+      <div className="relative z-10 flex min-h-[32rem] flex-col justify-between p-8 text-[#f8fafc] md:min-h-[40rem]">
         <Logo href="/" light className="text-3xl" />
         <div>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight">{title}</h1>
