@@ -44,6 +44,7 @@ export default function ConsoleApp() {
   const [selectedId, setSelectedId] = useState("");
   const [room, setRoom] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [boards, setBoards] = useState(null);
   const [error, setError] = useState("");
 
   async function loadList() {
@@ -53,6 +54,21 @@ export default function ConsoleApp() {
       return data;
     }
     setList(data);
+    if (data.user?.role === "viewer") {
+      const open = (data.competitions || []).filter((item) => !item.locked);
+      const targets = open.length ? open : (data.competitions || []).slice(0, 1);
+      if (!targets.length) {
+        setBoards([]);
+      } else {
+        try {
+          const rooms = await Promise.all(targets.map((item) => api(`/api/competitions/${item.id}`)));
+          setBoards(rooms);
+        } catch (reason) {
+          setBoards([]);
+          throw reason;
+        }
+      }
+    }
     return data;
   }
 
@@ -98,7 +114,9 @@ export default function ConsoleApp() {
       </header>
       <div className="mx-auto max-w-5xl px-5 py-8">
         {error ? <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
-        {selectedId && room ? (
+        {list.user.role === "viewer" ? (
+          boards ? <ViewerRankings list={list} boards={boards} /> : <p className="text-muted">Opening your rankings…</p>
+        ) : selectedId && room ? (
           <CompetitionRoom
             room={room}
             onBack={() => {
@@ -127,6 +145,53 @@ export default function ConsoleApp() {
   );
 }
 
+function ViewerRankings({ list, boards }) {
+  const hub = list.user.organizationName || "your hub";
+  if (!boards.length) {
+    return (
+      <section>
+        <h1 className="text-3xl font-semibold tracking-tight">Current rankings</h1>
+        <p className="mt-3 max-w-xl text-muted">No competition is open for {hub} yet. An administrator adds the board when the contest starts.</p>
+      </section>
+    );
+  }
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Current rankings</h1>
+        <p className="mt-2 max-w-xl text-muted">The kilograms recorded for {hub}, with a forecast for each group. This account can read the board and cannot record a weigh-in.</p>
+      </div>
+      {boards.map(({ competition, standings, forecasts }) => {
+        const max = Math.max(...standings.map((row) => row.kilos), 0);
+        return (
+          <section key={competition.id} className="rounded-3xl border border-line bg-card p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent">{competition.kindLabel}</p>
+            <h2 className="mt-1 text-3xl font-semibold tracking-tight">{competition.name}</h2>
+            <p className="mt-2 text-muted">{prettyDate(competition.startsOn)} to {prettyDate(competition.endsOn)}</p>
+            {competition.locked ? <p className="mt-3 text-sm text-clay">This ranking is final.</p> : null}
+            <ol className="rank-list mt-5 space-y-2">
+              {standings.map((row) => (
+                <li key={row.id} className="px-3 py-2">
+                  <div className="mb-1 flex justify-between gap-3 text-sm">
+                    <span className="font-semibold">{row.rank}. {row.name}</span>
+                    <span className="font-bold">{kg(row.kilos)} kg</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-line">
+                    <div className="h-2 rounded-full bg-accent" style={{ width: `${max ? Math.max(row.kilos ? 6 : 0, (row.kilos / max) * 100) : 0}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-6">
+              <ForecastChart forecasts={forecasts || []} locked={competition.locked} noun={competition.participantNoun} selectId={`forecast-${competition.id}`} />
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 function CompetitionList({ list, onOpen, onAdd }) {
   return (
     <section>
@@ -145,7 +210,7 @@ function CompetitionList({ list, onOpen, onAdd }) {
       </div>
       {list.competitions.length === 0 ? (
         <p className="rise mt-8 rounded-3xl border border-line bg-card p-6 text-muted">
-          Nothing is on your list yet. An administrator enrolls viewers into one competition at a time.
+          Nothing is on your list yet. Add a competition and the people in this hub will see its rankings when they sign in.
         </p>
       ) : (
         <ul className="mt-8 grid gap-4">
@@ -200,7 +265,7 @@ function JoinQueue() {
   return (
     <section className="mt-8 rounded-3xl border border-line bg-card p-6">
       <h2 className="text-xl font-semibold">Join requests</h2>
-      <p className="mt-2 text-sm text-muted">Confirm the email before that person can open this hub.</p>
+      <p className="mt-2 text-sm text-muted">Confirm the email once. After that, signing in opens this hub’s rankings and forecast.</p>
       <ul className="mt-4 space-y-3">
         {requests.map((request) => (
           <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
@@ -513,7 +578,6 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
   const [step, setStep] = useState("edit");
   const [pending, setPending] = useState(false);
   const [locking, setLocking] = useState(false);
-  const [viewerId, setViewerId] = useState(room.enrollable[0]?.id || "");
   const max = Math.max(...standings.map((row) => row.kilos), 0);
   const place = standings.find((row) => row.id === unitId);
 
@@ -539,19 +603,6 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
     try {
       await api(`/api/competitions/${competition.id}/lock`, { method: "POST" });
       setLocking(false);
-      await onReload();
-    } catch (reason) {
-      onError(reason.message);
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function enroll(event) {
-    event.preventDefault();
-    setPending(true);
-    try {
-      await api(`/api/competitions/${competition.id}/enroll`, { method: "POST", body: JSON.stringify({ userId: viewerId }) });
       await onReload();
     } catch (reason) {
       onError(reason.message);
@@ -665,29 +716,12 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
         </section>
       ) : null}
 
-      <ForecastChart forecasts={room.forecasts || []} locked={competition.locked} noun={competition.participantNoun} />
-
-      {access.enroll && room.enrollable.length ? (
-        <form onSubmit={enroll} className="rounded-3xl border border-line bg-card p-6">
-          <h2 className="text-xl font-semibold">Enroll a viewer</h2>
-          <p className="mt-1 text-sm text-muted">They will see this competition only, the same way a class appears on a course list.</p>
-          <div className="mt-4 flex flex-wrap items-end gap-3">
-            <label className="text-sm font-medium" htmlFor="enroll-viewer">
-              Viewer
-              <select id="enroll-viewer" value={viewerId} onChange={(event) => setViewerId(event.target.value)} className="mt-1 block rounded-2xl border border-line bg-card px-4 py-3">
-                {room.enrollable.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
-              </select>
-              <span className="mt-1 block text-xs font-normal text-muted">They will see only this competition, such as Mina Cruz.</span>
-            </label>
-            <button disabled={pending} className="rounded-full bg-forest px-4 py-3 text-sm font-semibold text-on-brand disabled:opacity-60">Enroll</button>
-          </div>
-        </form>
-      ) : null}
+      <ForecastChart forecasts={room.forecasts || []} locked={competition.locked} noun={competition.participantNoun} selectId={`forecast-${competition.id}`} />
     </div>
   );
 }
 
-function ForecastChart({ forecasts, locked, noun }) {
+function ForecastChart({ forecasts, locked, noun, selectId = "forecast-group" }) {
   const [selectedId, setSelectedId] = useState(forecasts[0]?.id || "");
   const selected = forecasts.find((item) => item.id === selectedId) || forecasts[0];
   if (!selected) return null;
@@ -697,9 +731,9 @@ function ForecastChart({ forecasts, locked, noun }) {
     <section className="rounded-3xl border border-line bg-card p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-xl font-semibold">{locked ? "Trend at lock" : "Forecast"}</h2>
-        <label className="text-sm font-medium" htmlFor="forecast-group">
+        <label className="text-sm font-medium" htmlFor={selectId}>
           {noun}
-          <select id="forecast-group" aria-label={`Forecast for a ${noun.toLowerCase()}`} value={selected.id} onChange={(event) => setSelectedId(event.target.value)} className="ml-2 rounded-2xl border border-line bg-card px-3 py-2">
+          <select id={selectId} aria-label={`Forecast for a ${noun.toLowerCase()}`} value={selected.id} onChange={(event) => setSelectedId(event.target.value)} className="ml-2 rounded-2xl border border-line bg-card px-3 py-2">
             {forecasts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
           <span className="mt-1 block text-xs font-normal text-muted">The group whose line is drawn, such as College of Engineering.</span>

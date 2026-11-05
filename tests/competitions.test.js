@@ -15,21 +15,51 @@ function database() {
   return db;
 }
 
-test("a viewer only receives the competition they are enrolled in", () => {
+test("a viewer sees the rankings of their own hub", () => {
   const db = database();
-  const admin = getActorByEmail(db, "antonio.admin@plasticycle.app");
-  const created = createCompetition(db, admin, {
+  const otherAdmin = getActorByEmail(db, "antonio.admin@plasticycle.app");
+  const other = createCompetition(db, otherAdmin, {
     name: "San Antonio Purok Cup",
     kind: "barangay",
     startsOn: "2026-01-01",
     endsOn: "2026-12-31",
     participants: ["Purok North", "Purok South"],
   }, "ip");
-  const viewer = listCompetitions(db, getActorByEmail(db, "mmcm.view@plasticycle.app"));
+  const admin = getActorByEmail(db, "mmcm.admin@plasticycle.app");
+  const own = createCompetition(db, admin, {
+    name: "Campus Cup",
+    kind: "campus",
+    startsOn: "2026-01-01",
+    endsOn: "2026-12-31",
+    participants: ["Library", "Clinic"],
+  }, "ip");
+  const viewer = getActorByEmail(db, "mmcm.view@plasticycle.app");
+  const visible = listCompetitions(db, viewer);
+  assert.equal(visible.some((item) => item.id === other.id), false);
+  assert.equal(visible.some((item) => item.id === own.id), true);
   const middleman = listCompetitions(db, getActorByEmail(db, "antonio.weigh@plasticycle.app"));
-  assert.equal(viewer.some((item) => item.id === created.id), false);
-  assert.equal(middleman.some((item) => item.id === created.id), true);
-  assert.equal(middleman.find((item) => item.id === created.id).participantNoun, "Purok");
+  assert.equal(middleman.some((item) => item.id === other.id), true);
+  assert.equal(middleman.find((item) => item.id === other.id).participantNoun, "Purok");
+  const units = db.prepare(
+    "SELECT unit_id FROM competition_participants WHERE competition_id = ?",
+  ).all(own.id);
+  const insert = db.prepare(
+    `INSERT INTO collections (
+      id, organization_id, unit_id, season_id, recorded_by, kilos, note, client_request_id, voided, created_at
+    ) VALUES (?, 'org_mmcm', ?, ?, ?, ?, NULL, NULL, 0, ?)`,
+  );
+  const recorder = getActorByEmail(db, "mmcm.weigh@plasticycle.app").id;
+  ["2026-09-07", "2026-09-14", "2026-09-21", "2026-09-28"].forEach((day, index) => {
+    insert.run(randomUUID(), units[0].unit_id, own.id, recorder, 10 + index, manilaNoonIso(day));
+  });
+  const room = competitionRoom(db, viewer, own.id);
+  assert.ok(room.standings.some((row) => row.kilos > 0));
+  assert.equal(room.forecasts.find((item) => item.id === units[0].unit_id).forecast.status, "ok");
+  assert.equal(room.recent.length, 0);
+  assert.throws(
+    () => competitionRoom(db, viewer, other.id),
+    (error) => error instanceof ActionError && error.status === 404,
+  );
 });
 
 test("a locked competition keeps its standings and refuses new kilos", () => {
