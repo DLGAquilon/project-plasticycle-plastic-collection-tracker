@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import Logo from "../../components/logo.js";
-import ThemeToggle from "../../components/theme-toggle.js";
+import { useEffect, useMemo, useState } from "react";
+import AuthPanel from "../../components/auth-panel.js";
 
 const TYPES = [
   ["barangay", "Barangay"],
@@ -13,8 +12,14 @@ const TYPES = [
   ["other", "Other (Specify)"],
 ];
 
+function typeLabel(id, other) {
+  if (id === "other") return other.trim() || "Other";
+  return TYPES.find(([value]) => value === id)?.[1] || id;
+}
+
 export default function SignupPage() {
   const [mode, setMode] = useState("join");
+  const [step, setStep] = useState("form");
   const [organizations, setOrganizations] = useState([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,6 +28,8 @@ export default function SignupPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [organizationType, setOrganizationType] = useState("barangay");
   const [organizationTypeOther, setOrganizationTypeOther] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -31,16 +38,38 @@ export default function SignupPage() {
     if (hub === "1") setMode("create");
     fetch("/api/public/organizations")
       .then((response) => response.json())
-      .then((data) => {
-        const rows = data.organizations || [];
-        setOrganizations(rows);
-        setOrganizationId(rows[0]?.id || "");
-      })
+      .then((data) => setOrganizations(data.organizations || []))
       .catch(() => setError("The organization list could not be loaded."));
   }, []);
 
-  async function submit(event) {
+  const selected = organizations.find((org) => org.id === organizationId) || null;
+  const matches = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return organizations;
+    return organizations.filter((org) => org.name.toLowerCase().includes(term));
+  }, [organizations, search]);
+
+  function chooseMode(next) {
+    setMode(next);
+    setStep("form");
+    setError("");
+  }
+
+  function review(event) {
     event.preventDefault();
+    setError("");
+    if (mode === "join" && !selected) {
+      setError("Search for the community hub you belong to.");
+      return;
+    }
+    if (mode === "create" && organizationType === "other" && organizationTypeOther.trim().length < 2) {
+      setError("Specify the organization type, between 2 and 40 characters.");
+      return;
+    }
+    setStep("review");
+  }
+
+  async function submit() {
     setError("");
     setPending(true);
     const body = mode === "create"
@@ -65,87 +94,149 @@ export default function SignupPage() {
     }
   }
 
+  const hubLabel = mode === "create" ? organizationName : selected?.name;
+  const hubType = mode === "create" ? typeLabel(organizationType, organizationTypeOther) : (selected?.type_label || "Community hub");
+
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-12 px-6 py-12 md:grid-cols-2">
-        <section className="rise">
-          <div className="flex items-center justify-between gap-4">
-            <Logo className="text-3xl" />
-            <ThemeToggle />
-          </div>
-          <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight">
-            {mode === "create" ? "Open your community hub." : "Join as a participant."}
-          </h1>
-          <p className="mt-4 text-muted">
+      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-12 md:grid-cols-2">
+        <AuthPanel title={mode === "create" ? "Open your community hub." : "Join as a participant."}>
+          <p>
             {mode === "create"
-              ? "The first account on a new organization is the super admin. You will set the campaign rules, logo, and weigh-in limits next."
-              : "A viewer sees a competition only after an administrator enrolls them. Coordinator access comes later, by invite or approval."}
+              ? "The first account on a new organization is the head admin. You will set the campaign rules, logo, and weigh-in limits next."
+              : "Check the hub name before you send the request. An admin confirms your email before the account can enter."}
           </p>
-          <ul className="mt-6 space-y-3 text-sm text-muted">
-            <li><strong className="text-ink">Participant/Viewer.</strong> Joins an existing organization and reads the contests they are enrolled in.</li>
-            <li><strong className="text-ink">Super admin.</strong> Registers a new organization name and owns that hub.</li>
-            <li><strong className="text-ink">Coordinator.</strong> A viewer who is promoted with an invite code or an approved request.</li>
+          <ul className="space-y-3">
+            <li><strong className="text-[#f8fafc]">Participant/Viewer.</strong> Asks to join an existing hub and waits for an admin to confirm the email.</li>
+            <li><strong className="text-[#f8fafc]">Head Admin.</strong> Registers a new organization name and owns that hub.</li>
+            <li><strong className="text-[#f8fafc]">Coordinator.</strong> A viewer who is promoted with an invite code or an approved request.</li>
           </ul>
-        </section>
+        </AuthPanel>
         <section className="rise rounded-3xl border border-line bg-card p-7 shadow-sm">
           <div className="mb-5 grid grid-cols-2 rounded-full border border-line p-1 text-sm font-semibold">
-            <button type="button" onClick={() => setMode("join")} className={`rounded-full px-3 py-2 ${mode === "join" ? "bg-forest text-on-brand" : ""}`}>
+            <button type="button" onClick={() => chooseMode("join")} className={`rounded-full px-3 py-2 ${mode === "join" ? "bg-forest text-on-brand" : ""}`}>
               Join
             </button>
-            <button type="button" onClick={() => setMode("create")} className={`rounded-full px-3 py-2 ${mode === "create" ? "bg-forest text-on-brand" : ""}`}>
+            <button type="button" onClick={() => chooseMode("create")} className={`rounded-full px-3 py-2 ${mode === "create" ? "bg-forest text-on-brand" : ""}`}>
               New hub
             </button>
           </div>
-          <form className="space-y-4" onSubmit={submit}>
-            <label className="block text-sm font-medium" htmlFor="signup-name">
-              Your name
-              <input id="signup-name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
-            </label>
-            <label className="block text-sm font-medium" htmlFor="signup-email">
-              Email
-              <input id="signup-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
-            </label>
-            <label className="block text-sm font-medium" htmlFor="signup-password">
-              Password
-              <input id="signup-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
-            </label>
-            {mode === "join" ? (
-              <label className="block text-sm font-medium" htmlFor="signup-org">
-                Organization
-                <select id="signup-org" value={organizationId} onChange={(event) => setOrganizationId(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required>
-                  {organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
-                </select>
+          {step === "form" ? (
+            <form className="space-y-4" onSubmit={review}>
+              <label className="block text-sm font-medium" htmlFor="signup-name">
+                Your name
+                <input id="signup-name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
               </label>
-            ) : (
-              <>
-                <label className="block text-sm font-medium" htmlFor="signup-hub">
-                  Organization name
-                  <input id="signup-hub" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
-                </label>
-                <label className="block text-sm font-medium" htmlFor="signup-type">
-                  Organization type
-                  <select id="signup-type" value={organizationType} onChange={(event) => setOrganizationType(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
-                    {TYPES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-                  </select>
-                </label>
-                {organizationType === "other" ? (
-                  <label className="block text-sm font-medium" htmlFor="signup-other">
-                    Other (Specify)
-                    <input id="signup-other" value={organizationTypeOther} onChange={(event) => setOrganizationTypeOther(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+              <label className="block text-sm font-medium" htmlFor="signup-email">
+                Email
+                <input id="signup-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+              </label>
+              <label className="block text-sm font-medium" htmlFor="signup-password">
+                Password
+                <input id="signup-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+              </label>
+              {mode === "join" ? (
+                <div>
+                  <p className="text-sm font-medium">Search your organization</p>
+                  <button type="button" onClick={() => { setSearch(""); setSearchOpen(true); }} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 text-left">
+                    {selected ? selected.name : "Find your community hub"}
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <label className="block text-sm font-medium" htmlFor="signup-hub">
+                    Organization name
+                    <input id="signup-hub" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
                   </label>
-                ) : null}
-              </>
-            )}
-            {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
-            <button type="submit" disabled={pending || (mode === "join" && !organizationId)} className="w-full rounded-full bg-forest px-4 py-3 font-semibold text-on-brand disabled:opacity-60">
-              {pending ? "Creating…" : mode === "create" ? "Create the hub" : "Create viewer account"}
-            </button>
-          </form>
+                  <label className="block text-sm font-medium" htmlFor="signup-type">
+                    Organization type
+                    <select id="signup-type" value={organizationType} onChange={(event) => setOrganizationType(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
+                      {TYPES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+                    </select>
+                  </label>
+                  {organizationType === "other" ? (
+                    <label className="block text-sm font-medium" htmlFor="signup-other">
+                      Other (Specify)
+                      <input id="signup-other" value={organizationTypeOther} onChange={(event) => setOrganizationTypeOther(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                    </label>
+                  ) : null}
+                </>
+              )}
+              {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
+              <button type="submit" className="w-full rounded-full bg-forest px-4 py-3 font-semibold text-on-brand">
+                Review details
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Check this before you continue.</h2>
+              <dl className="space-y-3 rounded-2xl border border-line px-4 py-4 text-sm">
+                <div>
+                  <dt className="text-muted">Name</dt>
+                  <dd className="font-semibold">{name}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted">Email</dt>
+                  <dd className="font-semibold">{email}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted">Organization</dt>
+                  <dd className="font-semibold">{hubLabel}</dd>
+                </div>
+                <div>
+                  <dt className="text-muted">Type</dt>
+                  <dd className="font-semibold">{hubType}</dd>
+                </div>
+              </dl>
+              <p className="text-sm text-muted">
+                {mode === "join"
+                  ? `You are asking to join ${hubLabel}. An admin must confirm ${email} before the account can open their competitions.`
+                  : `You are creating ${hubLabel} and will be its head admin.`}
+              </p>
+              {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
+              <button type="button" onClick={submit} disabled={pending} className="w-full rounded-full bg-forest px-4 py-3 font-semibold text-on-brand disabled:opacity-60">
+                {pending ? "Sending…" : mode === "create" ? "Confirm and create the hub" : "Confirm and request to join"}
+              </button>
+              <button type="button" onClick={() => { setStep("form"); setError(""); }} className="w-full rounded-full border border-line px-4 py-3 text-sm font-semibold">
+                Edit details
+              </button>
+            </div>
+          )}
           <p className="mt-5 text-sm text-muted">
             Already registered? <Link href="/login" className="font-semibold text-forest">Sign in</Link>.
           </p>
         </section>
       </div>
+      {searchOpen ? (
+        <div className="fixed inset-0 z-40 grid place-items-center bg-[#0f172a]/55 px-4" role="presentation" onClick={() => setSearchOpen(false)}>
+          <div role="dialog" aria-modal="true" aria-labelledby="org-search-title" className="w-full max-w-md rounded-3xl border border-line bg-card p-6 text-ink shadow-sm" onClick={(event) => event.stopPropagation()}>
+            <h2 id="org-search-title" className="text-xl font-semibold">Search your organization</h2>
+            <label className="mt-4 block text-sm font-medium" htmlFor="org-search">
+              Organization name
+              <input id="org-search" value={search} onChange={(event) => setSearch(event.target.value)} autoFocus className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" placeholder="Type a hub name" />
+            </label>
+            <ul className="mt-4 max-h-64 space-y-2 overflow-auto">
+              {matches.map((org) => (
+                <li key={org.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOrganizationId(org.id);
+                      setSearchOpen(false);
+                    }}
+                    className="w-full rounded-2xl border border-line px-4 py-3 text-left hover:border-forest"
+                  >
+                    <span className="block font-semibold">{org.name}</span>
+                    <span className="block text-xs text-muted">{org.type_label || "Community hub"}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {matches.length === 0 ? <p className="mt-4 text-sm text-muted">No community hub matches that name. Create a new hub if yours is not here yet.</p> : null}
+            <button type="button" onClick={() => setSearchOpen(false)} className="mt-4 text-sm font-semibold text-forest">Close</button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

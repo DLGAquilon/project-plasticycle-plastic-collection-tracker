@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-export default function Logo({ href = "/", className = "text-3xl" }) {
+export default function Logo({ href = "/", className = "text-3xl", light = false }) {
   const wordmark = (
-    <span className={`font-extrabold tracking-tight text-forest transition-colors ${className}`}>
+    <span className={`font-extrabold tracking-tight transition-colors ${light ? "text-[#f8fafc]" : "text-forest"} ${className}`}>
       PlastiCycle
     </span>
   );

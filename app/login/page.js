@@ -2,9 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import Logo from "../../components/logo.js";
-import ThemeToggle from "../../components/theme-toggle.js";
+import AuthPanel from "../../components/auth-panel.js";
 import { DEMO_ACCOUNTS } from "../../lib/demo-accounts.js";
+
+function destination(user) {
+  if (user?.joinStatus === "pending" || user?.joinStatus === "declined") return "/pending";
+  if (user?.isOwner && user?.setupComplete === false) return "/setup";
+  return "/console";
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -27,7 +32,7 @@ export default function LoginPage() {
         setPending(false);
         return;
       }
-      window.location.href = data.user?.isOwner && data.user?.setupComplete === false ? "/setup" : "/console";
+      window.location.href = destination(data.user);
     } catch {
       setError("The platform could not be reached. Try again.");
       setPending(false);
@@ -36,20 +41,10 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-12 px-6 py-12 md:grid-cols-2">
-        <section className="rise">
-          <div className="flex items-center justify-between gap-4">
-            <Logo className="text-3xl" />
-            <ThemeToggle />
-          </div>
-          <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight">Sign in to your competitions.</h1>
-          <p className="mt-4 text-muted">
-            You will only see contests your organization runs, or the single contest a viewer was enrolled in.
-          </p>
-          <p className="mt-4 text-sm text-muted">
-            Need a viewer account? <Link href="/signup" className="font-semibold text-forest">Create one</Link>. Administrators and middlemen are added by an existing official.
-          </p>
-        </section>
+      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-12 md:grid-cols-2">
+        <AuthPanel title="Sign in to your competitions.">
+          <p>You will only see contests your organization runs, or the single contest a viewer was enrolled in.</p>
+        </AuthPanel>
         <section className="rise rounded-3xl border border-line bg-card p-7 shadow-sm" style={{ animationDelay: "80ms" }}>
           <form
             className="space-y-4"
@@ -71,6 +66,9 @@ export default function LoginPage() {
               {pending ? "Signing in…" : "Sign in"}
             </button>
           </form>
+          <Link href="/signup" className="mt-3 block rounded-full border border-line px-4 py-3 text-center text-sm font-semibold">
+            Create an account
+          </Link>
           <div className="mt-6 border-t border-line pt-5">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Demo accounts</p>
             <div className="mt-3 grid gap-2">

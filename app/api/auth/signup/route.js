@@ -17,8 +17,8 @@ export async function POST(request) {
       const result = loginUser(db, { email: created.email, password: body?.password, ipHash });
       return withSession({ user: result.user, next: "/setup" }, result.token);
     }
-    const result = registerViewer(db, body, ipHash);
-    return withSession({ user: result.user, next: "/console" }, result.token);
+    const result = registerViewer(db, { ...body, awaitingApproval: true }, ipHash);
+    return withSession({ user: result.user, next: "/pending" }, result.token);
   } catch (error) {
     return rejected(error);
   }

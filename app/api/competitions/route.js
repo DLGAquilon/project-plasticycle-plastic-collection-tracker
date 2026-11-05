@@ -19,10 +19,11 @@ export async function GET() {
         isOwner: actor.isOwner,
         setupComplete: actor.setupComplete,
         needsSetup: Boolean(actor.isOwner) && actor.setupComplete === false,
+        joinStatus: actor.joinStatus || "active",
       },
       canAdd: actor.role === "org_admin" || actor.role === "platform_admin",
       canInvite: actor.role === "org_admin" || actor.role === "platform_admin",
-      organizations: actor.role === "platform_admin" ? listPublicOrganizations(getDb()) : [],
+      organizations: actor.role === "platform_admin" ? listPublicOrganizations(getDb(), { includeTemplates: true }) : [],
       competitions,
     });
   } catch (error) {

@@ -2,7 +2,7 @@ process.env.PLASTICYCLE_SCRYPT_N = "1024";
 
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createCollection, getActorByEmail, loginUser, registerViewer } from "../lib/actions.js";
+import { createCollection, getActorByEmail, listPublicOrganizations, loginUser, registerViewer } from "../lib/actions.js";
 import { createCompetition } from "../lib/competitions.js";
 import { createDatabase, seedIfEmpty } from "../lib/db.js";
 import { ActionError } from "../lib/errors.js";
@@ -10,8 +10,10 @@ import {
   createCoordinatorInvite,
   listRoleRequests,
   redeemCoordinatorInvite,
+  listJoinRequests,
   registerOrganization,
   requestAdminRights,
+  reviewJoinRequest,
   reviewRoleRequest,
   saveHubSetup,
 } from "../lib/onboarding.js";
@@ -158,4 +160,36 @@ test("a hub can tighten the kilograms accepted on one weigh-in", () => {
     }, "ip"),
     (error) => error instanceof ActionError && error.status === 400,
   );
+});
+
+test("joining a real hub waits for an admin, and sample hubs stay off the public list", () => {
+  const db = database();
+  assert.equal(listPublicOrganizations(db).some((org) => org.name === "Barangay San Antonio"), false);
+  hub(db, "owner.mintal@example.com", "Barangay Mintal Test");
+  assert.equal(listPublicOrganizations(db).some((org) => org.name === "Barangay Mintal Test"), true);
+  const org = db.prepare("SELECT id FROM organizations WHERE name = ?").get("Barangay Mintal Test");
+  assert.throws(
+    () => registerViewer(db, {
+      name: "Sample Person",
+      email: "sample.join@example.com",
+      password: "Viewer!Pass1",
+      organizationId: "org_mmcm",
+      awaitingApproval: true,
+    }, "ip"),
+    (error) => error instanceof ActionError && error.status === 400,
+  );
+  const result = registerViewer(db, {
+    name: "Paolo Reyes",
+    email: "paolo.join@example.com",
+    password: "Viewer!Pass1",
+    organizationId: org.id,
+    awaitingApproval: true,
+  }, "ip");
+  assert.equal(result.user.role, "viewer");
+  assert.equal(result.user.joinStatus, "pending");
+  const owner = getActorByEmail(db, "owner.mintal@example.com");
+  const waiting = listJoinRequests(db, owner);
+  assert.equal(waiting[0].email, "paolo.join@example.com");
+  reviewJoinRequest(db, owner, waiting[0].id, "approve", "ip");
+  assert.equal(getActorByEmail(db, "paolo.join@example.com").joinStatus, "active");
 });

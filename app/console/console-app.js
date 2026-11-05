@@ -45,6 +45,10 @@ export default function ConsoleApp() {
 
   async function loadList() {
     const data = await api("/api/competitions");
+    if (data.user?.joinStatus === "pending" || data.user?.joinStatus === "declined") {
+      window.location.href = "/pending";
+      return data;
+    }
     if (data.user?.needsSetup) {
       window.location.href = "/setup";
       return data;
@@ -164,8 +168,56 @@ function CompetitionList({ list, onOpen, onAdd }) {
           ))}
         </ul>
       )}
+      {list.user.role === "org_admin" ? <JoinQueue /> : null}
       {list.user.isOwner ? <OwnerAccess /> : null}
       {list.canInvite ? <InviteForm list={list} /> : null}
+    </section>
+  );
+}
+
+function JoinQueue() {
+  const [requests, setRequests] = useState([]);
+  const [error, setError] = useState("");
+
+  async function load() {
+    const data = await api("/api/admin/joins");
+    setRequests(data.requests || []);
+  }
+
+  useEffect(() => {
+    load().catch((reason) => setError(reason.message));
+  }, []);
+
+  async function review(id, decision) {
+    setError("");
+    try {
+      await api("/api/admin/joins", { method: "POST", body: JSON.stringify({ id, decision }) });
+      await load();
+    } catch (reason) {
+      setError(reason.message);
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-3xl border border-line bg-card p-6">
+      <h2 className="text-xl font-semibold">Join requests</h2>
+      <p className="mt-2 text-sm text-muted">Confirm the email before that person can open this hub.</p>
+      <ul className="mt-4 space-y-3">
+        {requests.map((request) => (
+          <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+            <span>
+              <span className="font-semibold">{request.name}</span>
+              <span className="mt-1 block text-sm text-muted">{request.email}</span>
+            </span>
+            <span className="flex gap-2">
+              <button type="button" onClick={() => review(request.id, "approve")} className="rounded-full bg-forest px-3 py-2 text-sm font-semibold text-on-brand">Confirm</button>
+              <button type="button" onClick={() => review(request.id, "decline")} className="rounded-full border border-line px-3 py-2 text-sm font-semibold">Decline</button>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {requests.length === 0 ? <p className="mt-4 text-sm text-muted">No one is waiting to join.</p> : null}
+      {error ? <p className="mt-3 text-sm text-red-800">{error}</p> : null}
     </section>
   );
 }
