@@ -95,7 +95,8 @@ export default function SettingsPage() {
                 <form className="space-y-3" onSubmit={redeem}>
                   <label className="block text-sm font-medium" htmlFor="invite-code">
                     Enter Admin Invite Code
-                    <input id="invite-code" value={code} onChange={(event) => setCode(event.target.value)} autoComplete="off" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 uppercase outline-none focus:border-forest" placeholder="ABCD-EFGH" />
+                    <input id="invite-code" value={code} onChange={(event) => setCode(event.target.value)} autoComplete="off" placeholder="QQRB-LY7Q" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 uppercase outline-none focus:border-forest" />
+                    <span className="mt-1 block text-xs font-normal text-muted">Eight characters from the hub owner, such as QQRB-LY7Q.</span>
                   </label>
                   <button type="submit" disabled={pending || !code.trim()} className="w-full rounded-full border border-line px-4 py-3 font-semibold disabled:opacity-60">
                     Use invite code

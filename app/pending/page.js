@@ -32,7 +32,7 @@ export default function PendingPage() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-12 md:grid-cols-2">
+      <div className="mx-auto grid max-w-5xl items-start gap-8 px-6 py-12 md:grid-cols-2">
         <AuthPanel title="Waiting for your hub.">
           <p>An admin confirms the email before the account can open that organization’s competitions.</p>
         </AuthPanel>

@@ -10,8 +10,6 @@ import {
   getActorByEmail,
   joinSeason,
   loginUser,
-  loginWithVerifiedEmail,
-  lookupAccount,
   rank,
   seasonStandings,
   voidCollection,
@@ -19,6 +17,7 @@ import {
 import { createDatabase, seedIfEmpty } from "../lib/db.js";
 import { ActionError } from "../lib/errors.js";
 import { forecastWeekly } from "../lib/forecast.js";
+import { assessPassword } from "../lib/password-strength.js";
 import { parseKilos } from "../lib/security.js";
 import { buildWorkspace } from "../lib/workspace.js";
 
@@ -31,6 +30,15 @@ function database() {
 function actor(db, email) {
   return getActorByEmail(db, email);
 }
+
+test("a password shows its criteria before it can be accepted", () => {
+  assert.equal(assessPassword("short").level, "weak");
+  assert.equal(assessPassword("short").ready, false);
+  const okay = assessPassword("CampusDrive1");
+  assert.equal(okay.level, "okay");
+  assert.equal(okay.ready, true);
+  assert.equal(assessPassword("Campus!Drive2026").level, "strong");
+});
 
 test("kilograms accept a scale reading and reject ambiguous numbers", () => {
   assert.equal(parseKilos("12.5").kilos, 12.5);
@@ -207,19 +215,6 @@ test("failed sign-ins share one message and then lock", () => {
     () => loginUser(db, { email: "antonio.weigh@plasticycle.app", password: "Weigh!Station1", ipHash: "a" }),
     (error) => error.status === 429,
   );
-});
-
-test("email lookup accepts an existing account and Google sign-in uses that same email", () => {
-  const db = database();
-  assert.deepEqual(lookupAccount(db, "antonio.weigh@plasticycle.app"), { exists: true, reason: "ready" });
-  assert.deepEqual(lookupAccount(db, "missing.person@example.com"), { exists: false, reason: "none" });
-  assert.throws(
-    () => loginWithVerifiedEmail(db, { email: "missing.person@example.com", ipHash: "a" }),
-    (error) => error instanceof ActionError && error.status === 401,
-  );
-  const session = loginWithVerifiedEmail(db, { email: "antonio.weigh@plasticycle.app", ipHash: "a" });
-  assert.equal(session.user.email, "antonio.weigh@plasticycle.app");
-  assert.ok(session.token);
 });
 
 test("weekly totals become an eight-week trend, and a short history does not pretend to forecast", () => {

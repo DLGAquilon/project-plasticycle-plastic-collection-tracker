@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import Logo from "../../components/logo.js";
+import PasswordMeter from "../../components/password-meter.js";
 import ThemeToggle from "../../components/theme-toggle.js";
+import { assessPassword } from "../../lib/password-strength.js";
 import { formatWhen } from "../../lib/time.js";
 
 function kg(value) {
@@ -47,10 +50,6 @@ export default function ConsoleApp() {
     const data = await api("/api/competitions");
     if (data.user?.joinStatus === "pending" || data.user?.joinStatus === "declined") {
       window.location.href = "/pending";
-      return data;
-    }
-    if (data.user?.needsSetup) {
-      window.location.href = "/setup";
       return data;
     }
     setList(data);
@@ -225,6 +224,7 @@ function JoinQueue() {
 function OwnerAccess() {
   const [requests, setRequests] = useState([]);
   const [code, setCode] = useState("");
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -243,6 +243,7 @@ function OwnerAccess() {
     try {
       const data = await api("/api/admin/invites", { method: "POST" });
       setCode(data.code);
+      setCopied(false);
     } catch (reason) {
       setError(reason.message);
     }
@@ -268,7 +269,48 @@ function OwnerAccess() {
       <button type="button" onClick={generate} disabled={pending} className="mt-4 rounded-full bg-forest px-4 py-2 text-sm font-semibold text-on-brand disabled:opacity-60">
         Create invite code
       </button>
-      {code ? <p className="mt-3 font-semibold tracking-wide">Invite code {code}</p> : null}
+      {code ? (
+        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Invite code</p>
+            <p className="mt-1 font-semibold tracking-wide">{code}</p>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              setError("");
+              try {
+                await navigator.clipboard.writeText(code);
+                setCopied(true);
+                return;
+              } catch {
+                /* The clipboard can refuse a scripted write. Try the older copy command. */
+              }
+              try {
+                const field = document.createElement("textarea");
+                field.value = code;
+                field.setAttribute("readonly", "");
+                field.style.position = "fixed";
+                field.style.left = "-9999px";
+                document.body.appendChild(field);
+                field.select();
+                const copiedNow = document.execCommand("copy");
+                field.remove();
+                if (copiedNow) {
+                  setCopied(true);
+                  return;
+                }
+              } catch {
+                /* Both copy paths failed. */
+              }
+              setError("The code could not be copied.");
+            }}
+            className="rounded-full border border-line px-4 py-2 text-sm font-semibold"
+          >
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+      ) : null}
       <ul className="mt-4 space-y-3">
         {requests.map((request) => (
           <li key={request.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
@@ -304,9 +346,13 @@ function InviteForm({ list }) {
 
   async function submit(event) {
     event.preventDefault();
-    setPending(true);
     setError("");
     setMessage("");
+    if (!assessPassword(password).ready) {
+      setError("Meet every password criterion before you create the account.");
+      return;
+    }
+    setPending(true);
     try {
       const created = await api("/api/admin/users", {
         method: "POST",
@@ -336,30 +382,36 @@ function InviteForm({ list }) {
         Joining an existing organization creates a viewer. Staff accounts are added here by someone who already holds that authority.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <label className="text-sm font-medium">
+        <label className="text-sm font-medium" htmlFor="staff-name">
           Name
-          <input value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <input id="staff-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Paolo Reyes" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <span className="mt-1 block text-xs font-normal text-muted">The name on the staff account, such as Paolo Reyes.</span>
         </label>
-        <label className="text-sm font-medium">
+        <label className="text-sm font-medium" htmlFor="staff-email">
           Email
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <input id="staff-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="paolo.reyes@riverside.edu" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <span className="mt-1 block text-xs font-normal text-muted">They will sign in with this address.</span>
         </label>
-        <label className="text-sm font-medium">
+        <label className="text-sm font-medium md:col-span-2" htmlFor="staff-password">
           Password
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <input id="staff-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Weigh!Station1" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <span className="mt-1 block text-xs font-normal text-muted">A sample shape is Weigh!Station1. Give them their own.</span>
+          <PasswordMeter password={password} />
         </label>
-        <label className="text-sm font-medium">
+        <label className="text-sm font-medium" htmlFor="staff-role">
           Role
-          <select value={role} onChange={(event) => setRole(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
+          <select id="staff-role" value={role} onChange={(event) => setRole(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
             {roles.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
+          <span className="mt-1 block text-xs font-normal text-muted">A middleman records weigh-ins. A viewer can only read a contest.</span>
         </label>
         {list.user.role === "platform_admin" ? (
-          <label className="text-sm font-medium md:col-span-2">
+          <label className="text-sm font-medium md:col-span-2" htmlFor="staff-org">
             Organization
-            <select value={organizationId} onChange={(event) => setOrganizationId(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
+            <select id="staff-org" value={organizationId} onChange={(event) => setOrganizationId(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
               {(list.organizations || []).map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
             </select>
+            <span className="mt-1 block text-xs font-normal text-muted">The hub this account belongs to, such as Riverside University.</span>
           </label>
         ) : null}
       </div>
@@ -405,7 +457,10 @@ function AddCompetition({ onCancel, onCreated, onError }) {
 
   return (
     <form onSubmit={submit} className="rise rounded-3xl border border-line bg-card p-6">
-      <button type="button" onClick={onCancel} className="text-sm font-semibold text-forest">Back to competitions</button>
+      <button type="button" onClick={onCancel} aria-label="Back to the dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-forest">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Dashboard
+      </button>
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">Add a competition</h1>
       <p className="mt-2 text-muted">The type decides the words on the board, so a barangay contest never mixes with campus departments.</p>
       <fieldset className="mt-6 grid gap-3 md:grid-cols-3">
@@ -424,21 +479,25 @@ function AddCompetition({ onCancel, onCreated, onError }) {
       </fieldset>
       <label className="mt-5 block text-sm font-medium" htmlFor="comp-name">
         Name
-        <input id="comp-name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+        <input id="comp-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Sustainability Month 2026" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+        <span className="mt-1 block text-xs font-normal text-muted">The title on the board, such as Sustainability Month 2026.</span>
       </label>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <label className="text-sm font-medium" htmlFor="comp-start">
           Starts
           <input id="comp-start" type="date" value={startsOn} onChange={(event) => setStartsOn(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <span className="mt-1 block text-xs font-normal text-muted">The first day, such as 5 Nov 2026.</span>
         </label>
         <label className="text-sm font-medium" htmlFor="comp-end">
           Ends
           <input id="comp-end" type="date" value={endsOn} onChange={(event) => setEndsOn(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+          <span className="mt-1 block text-xs font-normal text-muted">The last day, such as 5 Dec 2026.</span>
         </label>
       </div>
       <label className="mt-4 block text-sm font-medium" htmlFor="comp-people">
         {noun[0].toUpperCase() + noun.slice(1)}, one per line
         <textarea id="comp-people" value={participants} onChange={(event) => setParticipants(event.target.value)} rows={5} placeholder={kind === "barangay" ? "Purok 1\nPurok 4" : "College of Engineering\nCollege of Business"} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3" required />
+        <span className="mt-1 block text-xs font-normal text-muted">{kind === "barangay" ? "One purok on each line, such as Purok 1." : "One department on each line, such as College of Engineering."}</span>
       </label>
       <button disabled={pending} className="mt-5 rounded-full bg-forest px-5 py-3 font-semibold text-on-brand disabled:opacity-60">
         {pending ? "Saving…" : "Create competition"}
@@ -503,7 +562,10 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={onBack} className="text-sm font-semibold text-forest">All competitions</button>
+      <button type="button" onClick={onBack} aria-label="Back to the dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-forest">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Dashboard
+      </button>
       <div className="rise flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-accent">{competition.kindLabel}</p>
@@ -580,10 +642,12 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
                 <select id="log-place" value={unitId} onChange={(event) => setUnitId(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
                   {standings.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
                 </select>
+                <span className="mt-1 block text-xs font-normal text-muted">The group that receives this load, such as College of Engineering.</span>
               </label>
               <label className="text-sm font-medium md:col-span-2" htmlFor="log-kilos">
                 Kilograms
-                <input id="log-kilos" inputMode="decimal" value={kilos} onChange={(event) => setKilos(event.target.value)} placeholder="0.00" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-4 text-3xl" />
+                <input id="log-kilos" inputMode="decimal" value={kilos} onChange={(event) => setKilos(event.target.value)} placeholder="12.50" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-4 text-3xl" />
+                <span className="mt-1 block text-xs font-normal text-muted">The scale reading, such as 12.50. Use at most two decimal places.</span>
               </label>
               <button className="w-fit rounded-full bg-forest px-5 py-3 font-semibold text-on-brand">Review weigh-in</button>
             </form>
@@ -607,10 +671,14 @@ function CompetitionRoom({ room, onBack, onReload, onError }) {
         <form onSubmit={enroll} className="rounded-3xl border border-line bg-card p-6">
           <h2 className="text-xl font-semibold">Enroll a viewer</h2>
           <p className="mt-1 text-sm text-muted">They will see this competition only, the same way a class appears on a course list.</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <select aria-label="Viewer to enroll" value={viewerId} onChange={(event) => setViewerId(event.target.value)} className="rounded-2xl border border-line bg-card px-4 py-3">
-              {room.enrollable.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
-            </select>
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <label className="text-sm font-medium" htmlFor="enroll-viewer">
+              Viewer
+              <select id="enroll-viewer" value={viewerId} onChange={(event) => setViewerId(event.target.value)} className="mt-1 block rounded-2xl border border-line bg-card px-4 py-3">
+                {room.enrollable.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
+              </select>
+              <span className="mt-1 block text-xs font-normal text-muted">They will see only this competition, such as Mina Cruz.</span>
+            </label>
             <button disabled={pending} className="rounded-full bg-forest px-4 py-3 text-sm font-semibold text-on-brand disabled:opacity-60">Enroll</button>
           </div>
         </form>
@@ -629,11 +697,12 @@ function ForecastChart({ forecasts, locked, noun }) {
     <section className="rounded-3xl border border-line bg-card p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-xl font-semibold">{locked ? "Trend at lock" : "Forecast"}</h2>
-        <label className="text-sm font-medium">
+        <label className="text-sm font-medium" htmlFor="forecast-group">
           {noun}
-          <select aria-label={`Forecast for a ${noun.toLowerCase()}`} value={selected.id} onChange={(event) => setSelectedId(event.target.value)} className="ml-2 rounded-2xl border border-line bg-card px-3 py-2">
+          <select id="forecast-group" aria-label={`Forecast for a ${noun.toLowerCase()}`} value={selected.id} onChange={(event) => setSelectedId(event.target.value)} className="ml-2 rounded-2xl border border-line bg-card px-3 py-2">
             {forecasts.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
+          <span className="mt-1 block text-xs font-normal text-muted">The group whose line is drawn, such as College of Engineering.</span>
         </label>
       </div>
       {forecast.status !== "ok" ? (

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AuthPanel from "../../components/auth-panel.js";
+import PasswordMeter from "../../components/password-meter.js";
+import { assessPassword } from "../../lib/password-strength.js";
 
 const TYPES = [
   ["barangay", "Barangay"],
@@ -68,6 +70,10 @@ export default function SignupPage() {
       setError("Specify the organization type, between 2 and 40 characters.");
       return;
     }
+    if (!assessPassword(password).ready) {
+      setError("Meet every password criterion before you review the account.");
+      return;
+    }
     setStep("review");
   }
 
@@ -101,13 +107,16 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-screen bg-paper text-ink">
-      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-12 md:grid-cols-2">
-        <AuthPanel title={mode === "create" ? "Open your community hub." : "Join as a participant."}>
+      <div className="mx-auto grid max-w-5xl items-start gap-8 px-6 py-12 md:grid-cols-2">
+        <AuthPanel title={mode === "create" ? "Power Your Community's Impact." : "Every Action Counts."}>
           <p>
             {mode === "create"
-              ? "The first account on a new organization is the head admin. You will set the campaign rules, logo, and weigh-in limits next."
-              : "Check the hub name before you send the request. An admin confirms your email before the account can enter."}
+              ? "Launch a new organization hub or request to join an existing one. Review the role guidelines below to get started on tracking your recycling milestones."
+              : "Join your community’s recycling hub, track your personal diversion metrics, and collaborate with local coordinators. Once you submit your request, a hub admin will verify your account to get you started."}
           </p>
+          <div className="mt-6 border-t border-line pt-5">
+              <h1 className="text-xl font-medium italic text-center">How will you be contributing?</h1>
+          </div>
           <ul className="space-y-3">
             <li><strong className="text-[#f8fafc]">Participant/Viewer.</strong> Asks to join an existing hub and waits for an admin to confirm the email.</li>
             <li><strong className="text-[#f8fafc]">Head Admin.</strong> Registers a new organization name and owns that hub.</li>
@@ -127,19 +136,24 @@ export default function SignupPage() {
             <form className="space-y-4" onSubmit={review}>
               <label className="block text-sm font-medium" htmlFor="signup-name">
                 Your name
-                <input id="signup-name" value={name} onChange={(event) => setName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <input id="signup-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Liza Santos" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <span className="mt-1 block text-xs font-normal text-muted">The name people in your hub will see, such as Liza Santos.</span>
               </label>
               <label className="block text-sm font-medium" htmlFor="signup-email">
                 Email
-                <input id="signup-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <input id="signup-email" type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="liza.santos@riverside.edu" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <span className="mt-1 block text-xs font-normal text-muted">You will sign in with this address.</span>
               </label>
               <label className="block text-sm font-medium" htmlFor="signup-password">
                 Password
-                <input id="signup-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <input id="signup-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Campus!Drive1" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <span className="mt-1 block text-xs font-normal text-muted">A sample shape is Campus!Drive1. Use your own before you review.</span>
+                <PasswordMeter password={password} />
               </label>
               {mode === "join" ? (
                 <div>
                   <p className="text-sm font-medium">Search your organization</p>
+                  <span className="mt-1 block text-xs font-normal text-muted">Look up the hub you already belong to, such as Riverside University.</span>
                   <button type="button" onClick={() => { setSearch(""); setSearchOpen(true); }} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 text-left">
                     {selected ? selected.name : "Find your community hub"}
                   </button>
@@ -148,18 +162,21 @@ export default function SignupPage() {
                 <>
                   <label className="block text-sm font-medium" htmlFor="signup-hub">
                     Organization name
-                    <input id="signup-hub" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                    <input id="signup-hub" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} placeholder="Riverside University" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                    <span className="mt-1 block text-xs font-normal text-muted">A unique hub name, such as Riverside University.</span>
                   </label>
                   <label className="block text-sm font-medium" htmlFor="signup-type">
                     Organization type
                     <select id="signup-type" value={organizationType} onChange={(event) => setOrganizationType(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3">
                       {TYPES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                     </select>
+                    <span className="mt-1 block text-xs font-normal text-muted">Barangay, campus, NGO, company, or a type you name.</span>
                   </label>
                   {organizationType === "other" ? (
                     <label className="block text-sm font-medium" htmlFor="signup-other">
                       Other (Specify)
-                      <input id="signup-other" value={organizationTypeOther} onChange={(event) => setOrganizationTypeOther(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                      <input id="signup-other" value={organizationTypeOther} onChange={(event) => setOrganizationTypeOther(event.target.value)} placeholder="Homeowners association" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                      <span className="mt-1 block text-xs font-normal text-muted">2 to 40 characters, such as Homeowners association.</span>
                     </label>
                   ) : null}
                 </>
@@ -215,7 +232,8 @@ export default function SignupPage() {
             <h2 id="org-search-title" className="text-xl font-semibold">Search your organization</h2>
             <label className="mt-4 block text-sm font-medium" htmlFor="org-search">
               Organization name
-              <input id="org-search" value={search} onChange={(event) => setSearch(event.target.value)} autoFocus className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" placeholder="Type a hub name" />
+              <input id="org-search" value={search} onChange={(event) => setSearch(event.target.value)} autoFocus placeholder="Riverside University" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" />
+              <span className="mt-1 block text-xs font-normal text-muted">Type part of the hub name, such as Riverside.</span>
             </label>
             <ul className="mt-4 max-h-64 space-y-2 overflow-auto">
               {matches.map((org) => (

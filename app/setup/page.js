@@ -90,21 +90,25 @@ export default function SetupPage() {
           <form className="mt-8 space-y-4 rounded-3xl border border-line bg-card p-7" onSubmit={submit}>
             <label className="block text-sm font-medium" htmlFor="setup-rules">
               Campaign rules
-              <textarea id="setup-rules" value={rules} onChange={(event) => setRules(event.target.value)} rows={5} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" placeholder="Who may bring plastic, how a purok or department is scored, and when the contest locks." />
+              <textarea id="setup-rules" value={rules} onChange={(event) => setRules(event.target.value)} rows={5} placeholder="Saturday purok drive. One sack is one weigh-in. The board locks on 31 Dec 2026." className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" />
+              <span className="mt-1 block text-xs font-normal text-muted">What participants should know, such as when the contest locks.</span>
             </label>
             <label className="block text-sm font-medium" htmlFor="setup-logo">
               Branding logo
               <input id="setup-logo" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setLogo(event.target.files?.[0] || null)} className="mt-1 block w-full text-sm" />
+              <span className="mt-1 block text-xs font-normal text-muted">A PNG, JPEG, or WebP file, up to 1 MB.</span>
             </label>
             {hasLogo ? <img src="/api/branding/logo" alt="" className="h-16 w-16 rounded-2xl object-cover" /> : null}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-medium" htmlFor="setup-min">
                 Lightest weigh-in (kg)
-                <input id="setup-min" inputMode="decimal" value={minKilos} onChange={(event) => setMinKilos(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <input id="setup-min" inputMode="decimal" value={minKilos} onChange={(event) => setMinKilos(event.target.value)} placeholder="0.01" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <span className="mt-1 block text-xs font-normal text-muted">The lightest load, such as 0.01 kg.</span>
               </label>
               <label className="block text-sm font-medium" htmlFor="setup-max">
                 Heaviest weigh-in (kg)
-                <input id="setup-max" inputMode="decimal" value={maxKilos} onChange={(event) => setMaxKilos(event.target.value)} className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <input id="setup-max" inputMode="decimal" value={maxKilos} onChange={(event) => setMaxKilos(event.target.value)} placeholder="40.00" className="mt-1 w-full rounded-2xl border border-line bg-card px-4 py-3 outline-none focus:border-forest" required />
+                <span className="mt-1 block text-xs font-normal text-muted">The heaviest load on one entry, such as 40.00 kg.</span>
               </label>
             </div>
             {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-800">{error}</p> : null}
